@@ -1,0 +1,36 @@
+#!/bin/bash
+
+set -e
+
+function join_by { local IFS="$1"; shift; echo "$*"; }
+
+NOTES_DIR="${HOME}/notes"
+
+if [[ "$1" == "-l" ]]; then
+  (
+  cd $NOTES_DIR
+  find . -type f
+  )
+  exit 0
+fi
+
+if [[ $# -eq 0 ]]; then
+  RELATIVE_PATH="misc/$(date +'%Y_%m_%d_%H_%M_%S')"
+else
+  RELATIVE_PATH=`join_by / $@`
+fi
+
+FILENAME=`basename $RELATIVE_PATH`
+TITLE="${FILENAME//[_\/]/ }"
+FILEPATH="${NOTES_DIR}/${RELATIVE_PATH}.md"
+DIRPATH=`dirname ${FILEPATH}`
+
+if [[ ! -d $DIRPATH ]]; then
+  mkdir -p $DIRPATH
+fi
+
+if [[ ! -f $FILEPATH ]]; then
+  echo "# ${TITLE}" > $FILEPATH
+fi
+
+${EDITOR:-vi} $FILEPATH
